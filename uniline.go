@@ -7,8 +7,9 @@ import (
 	"os"
 	"unicode"
 
+	"github.com/dotcloud/docker/pkg/term"
+	. "github.com/tiborvass/file.debug"
 	"github.com/tiborvass/uniline/ansi"
-	"golang.org/x/crypto/ssh/terminal"
 )
 
 func defaultOnInterrupt(s *Scanner) (more bool) {
@@ -83,7 +84,7 @@ func NewScanner(input io.Reader, output io.Writer, onInterrupt func(s *Scanner) 
 	fd := f.Fd()
 	s.fd = &fd
 	t := os.Getenv("TERM")
-	s.dumb = !terminal.IsTerminal(fd) || len(t) == 0 || t == "dumb" || t == "cons25"
+	s.dumb = !term.IsTerminal(fd) || len(t) == 0 || t == "dumb" || t == "cons25"
 	return s
 }
 
@@ -150,14 +151,14 @@ func (s *Scanner) Scan(prompt string) (more bool) {
 		// continue scanning if no error
 		return s.err == nil
 	}
-	state, err := terminal.MakeRaw(*s.fd)
+	state, err := term.MakeRaw(*s.fd)
 	if err != nil {
 		panic(err)
 	}
 	defer func() {
-		terminal.RestoreTerminal(*s.fd, state)
+		term.RestoreTerminal(*s.fd, state)
 	}()
-	winsize, err := terminal.GetSize(*s.fd)
+	winsize, err := term.GetWinsize(*s.fd)
 	if err != nil {
 		panic(err)
 	}
@@ -206,7 +207,7 @@ func (s *Scanner) Scan(prompt string) (more bool) {
 				continue
 			}
 
-			//Debug("r: %v", r)
+			Debug("r: %v", r)
 
 			if isCompleteAnsiCode() {
 				// moving on to next rune
@@ -224,10 +225,10 @@ func (s *Scanner) Scan(prompt string) (more bool) {
 			// In the case where p is an escape sequence, add current bytes to previous and try a lookup
 
 			p = append(p, s.scanner.Bytes()...)
-			//Debug("p: %v", p)
+			Debug("p: %v", p)
 			if isCompleteAnsiCode() {
 				p = nil
-				//Debug("done")
+				Debug("done")
 			}
 		}
 	}

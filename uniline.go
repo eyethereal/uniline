@@ -129,13 +129,15 @@ func (s *Scanner) Scan(prompt string) (more bool) {
 	// no need to initialize internal scanner more than once
 	if s.scanner == nil {
 		s.scanner = bufio.NewScanner(s.input)
+		s.scanner.Split(bufio.ScanRunes)
 	}
 
 	s.prompt = textFromString(prompt)
 	s.stop = false
 
 	if s.dumb {
-		s.scanner.Split(bufio.ScanLines)
+		//TS: Moving to initialization
+		//s.scanner.Split(bufio.ScanLines)
 
 		if _, err := fmt.Fprint(s.output, string(s.prompt.bytes)); err != nil {
 			panic(err)
@@ -173,7 +175,8 @@ func (s *Scanner) Scan(prompt string) (more bool) {
 	s.history.index = len(s.history.tmp) - 1
 
 	s.output.Write(s.prompt.bytes)
-	s.scanner.Split(bufio.ScanRunes)
+	//TS: Moving to initialization
+	//s.scanner.Split(bufio.ScanRunes)
 
 	var p []byte
 
